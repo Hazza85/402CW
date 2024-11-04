@@ -99,8 +99,7 @@ class FrameManager:
 
         if row <= self.frames[from_frame].rows - 1 or col <= self.frames[from_frame].cols - 1:
             found_x = False
-            if self.frames[from_frame].rows > self.frames[to_frame].rows or self.frames[from_frame].cols > self.frames[
-                to_frame].cols:
+            if self.frames[from_frame].rows > self.frames[to_frame].rows or self.frames[from_frame].cols > self.frames[to_frame].cols:
                 for row_check in range(self.frames[to_frame].rows):
                     for col_check in range(self.frames[to_frame].cols):
                         if self.frames[from_frame].grid[row_check][col_check] != '.':
@@ -115,9 +114,6 @@ class FrameManager:
                         self.frames[to_frame].set_button(row, col, from_frame)
                     # TODO: This is where things get turned into X's update to change it when needed at some point
                     # TODO: A button location should only be blocked when there is a button blocking it, currently it does it just in case.
-                    # for row_check2 in range(self.frames[to_frame].rows):
-                    #     for col_check2 in range(self.frames[to_frame].cols):
-                    #         self.frames[from_frame].set_button(row_check2, col_check2, 'X')
             else:
                 self.frames[from_frame].set_button(row, col, to_frame)
                 self.frames[to_frame].set_button(row, col, from_frame)
