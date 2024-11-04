@@ -115,24 +115,34 @@ class FrameManager:
                         self.frames[to_frame].set_button(row, col, from_frame)
                     # TODO: This is where things get turned into X's update to change it when needed at some point
                     # TODO: A button location should only be blocked when there is a button blocking it, currently it does it just in case.
-                    for row_check2 in range(self.frames[to_frame].rows):
-                        for col_check2 in range(self.frames[to_frame].cols):
-                            self.frames[from_frame].set_button(row_check2, col_check2, 'X')
+                    # for row_check2 in range(self.frames[to_frame].rows):
+                    #     for col_check2 in range(self.frames[to_frame].cols):
+                    #         self.frames[from_frame].set_button(row_check2, col_check2, 'X')
             else:
                 self.frames[from_frame].set_button(row, col, to_frame)
                 self.frames[to_frame].set_button(row, col, from_frame)
         else:
             print("Outside of limits etc... ")
-        self.check_stuff_idk(from_frame, to_frame)
+        self.check_stuff_idk()
 
     def display_frames(self):
         for i, frame in enumerate(self.frames):
             frame.display()
 
     def check_stuff_idk(self):
-        for frame in self.frames:
-            for i in self.frames[from_frame].button:
-                print(i)
+        for i, frame in enumerate(self.frames):
+            # List allows for: RuntimeError: dictionary changed size during iteration
+            for coords in list(frame.button):
+                if frame.button[coords] != "X":
+                    for inner_coords in list(self.frames[frame.button[coords]].button):
+                        print("def.2")
+                        try:
+                            if frame.grid[inner_coords[0]][inner_coords[1]] == '.':
+                                frame.set_button(*inner_coords, 'X')
+                        except Exception as e:
+                            print("def. ", e)
+                            pass
+                        pass
 
 
 def main() -> None:
@@ -170,5 +180,3 @@ I used to call them portals; transition to calling them buttons.
 '\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
 Dependency graphs
 '''
-
-
