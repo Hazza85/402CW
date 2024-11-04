@@ -57,7 +57,7 @@ class FrameManager:
         self.frames: list[Frame] = []
         self.frame_number = 0  # Logic from before the frames knew what number they were, so do NOT change this to -1.
 
-    def frame_number(self):
+    def frame_number_next(self):
         self.frame_number += 1
         return self.frame_number
 
@@ -67,7 +67,7 @@ class FrameManager:
                 rows = self.get_valid_input("Rows: ", is_frame_index=False)
                 cols = self.get_valid_input("Cols: ", is_frame_index=False)
                 if rows > 0 and cols > 0:
-                    frame = Frame(rows, cols, self.frame_number())
+                    frame = Frame(rows, cols, self.frame_number_next())
                     self.frames.append(frame)
                     break
             except ValueError:
