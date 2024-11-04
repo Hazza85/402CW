@@ -1,6 +1,6 @@
 class Frame:
     def __init__(self, rows, cols, frame_number):
-        self.frame_number = frame_number
+        self.frame_number: int = frame_number
         self.rows = rows
         self.cols = cols
         print(f"A ({rows}x{cols}) frame, ID: {self.frame_number}, created.")
@@ -9,11 +9,12 @@ class Frame:
         self.grid: [int, int] = [['.' for _ in range(cols)] for _ in range(rows)]  # '.' are empty spaces.
         self.button: [(int, int), int] = {}  # [(y, x), grid];
 
-    # Used to display the grid,
+    # Used to display the grid
     def display(self):
         print(f"Frame ID: {self.frame_number} ")
         for row in self.grid:
             print(' '.join(row))
+        print("")
 
     def set_button(self, row, col, target_frame: int) -> bool:
         # You are passing the number representing the target frame and not the actual reference to it.
@@ -31,19 +32,18 @@ class Frame:
         return 0 <= row < self.rows and 0 <= col < self.cols and self.grid[row][col] == '.'
 
     def available_positions(self, all_frames: list) -> list:
-        options: list = []
+        # Adding prints here clutters the interface and makes it hard to follow.
+        options = []
         for row in range(self.rows):
 
-            row_options: list = []
+            row_options = []
             for col in range(self.cols):
 
                 if self.can_set_button(row, col):
-                    # This grabs the frame numbers of those that can be put in certain squares on the grid.
-                    valid_targets = [i + 1 for i in range(len(all_frames)) if
+                    valid_targets = [i for i in range(len(all_frames)) if
                                      all_frames[i].can_set_button(row, col) and all_frames[i] != self]
                     row_options.append(valid_targets if valid_targets else ['.'])
                 else:
-                    # This is when there already a button on the FROM frames square, avoids excess compute.
                     row_options.append(['X'])
 
             options.append(row_options)
@@ -73,42 +73,39 @@ class FrameManager:
                 print("Invalid input. Please enter integers.")
 
     def set_button(self) -> None:
-        print("Available frames:")
-        for i, frame in enumerate(self.frames):
-            print(f"{i}. Frame {i}")
+        self.display_frames()
 
         from_frame = int(input("From frame: "))
 
         print(f"Positions in Frame {from_frame}:")
         options = self.frames[from_frame].available_positions(self.frames)
+
         for row in range(self.frames[from_frame].rows):
-            output_row = []
+            row_options = []
+
             for col in range(self.frames[from_frame].cols):
                 if options[row][col] != ['.']:
-                    output_row.append(f"[{', '.join(map(str, options[row][col]))}]")
-                else:
-                    output_row.append('.')
-            print(' '.join(output_row))
+                    row_options.append(f"[{', '.join(map(str, options[row][col]))}]")
+                else: row_options.append('.')
+            print(' '.join(row_options))
 
         print(f"To frame (excluding {from_frame}):")
-        to_frame_indices: list[int] = [i for i in range(len(self.frames)) if i != from_frame]
-        for i in to_frame_indices:
-            print(f"{i}. Frame {i}")
+        for j in [i for i in range(len(self.frames)) if i != from_frame]: print(f"{j}. Frame {j}")
 
-        to_frame_index = int(input("To frame: "))
+        to_frame = int(input("To frame: "))
         row = int(input("Row for button: "))
         col = int(input("Col for button: "))
 
         if self.frames[from_frame].can_set_button(row, col):
-            if self.frames[to_frame_index].can_set_button(row, col):
-                if self.frames[from_frame].set_button(row, col, to_frame_index):
-                    self.frames[to_frame_index].set_button(row, col, from_frame)
+            if self.frames[to_frame].can_set_button(row, col):
+                if self.frames[from_frame].set_button(row, col, to_frame):
+                    self.frames[to_frame].set_button(row, col, from_frame)
         else:
-            print("cannot set button here. ")
+            print("Cannot set button here. ")
 
     def display_frames(self):
-        print("Displaying all frames: ")
-        for i, frame in enumerate(self.frames): frame.display()
+        for i, frame in enumerate(self.frames):
+            frame.display()
 
 
 def main() -> None:
@@ -130,6 +127,7 @@ Menu:
         elif choice == '2':
             frame_manager.set_button()
         elif choice == '3':
+            print("Displaying all frames: ")
             frame_manager.display_frames()
         elif choice == '4':
             break
@@ -139,7 +137,6 @@ Menu:
 
 if __name__ == "__main__":
     main()
-
 
 ''' Notes:
 I used to call them portals; transition to calling them buttons.
