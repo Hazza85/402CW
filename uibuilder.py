@@ -3,7 +3,7 @@ class Frame:
         self.frame_number = frame_number
         self.rows = rows
         self.cols = cols
-        print(f"Frame {self.frame_number}: {rows}x{cols}.")
+        print(f"A ({rows}x{cols}) frame, ID: {self.frame_number}, created.")
 
         # TODO: The grid Var doesn't need to be here if we have self.button, but removing it takes time and doesn't help with anything...
         self.grid: [int, int] = [['.' for _ in range(cols)] for _ in range(rows)]  # '.' are empty spaces.
@@ -11,7 +11,7 @@ class Frame:
 
     # Used to display the grid,
     def display(self):
-        print(f"Frame {self.frame_number}: ")
+        print(f"Frame ID: {self.frame_number}... ")
         for row in self.grid:
             print(' '.join(row))
         # '\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
@@ -46,7 +46,7 @@ class Frame:
                     row_options.append(valid_targets if valid_targets else ['.'])
                 else:
                     # This is when there already a button on the FROM frames square, avoids excess compute.
-                    row_options.append(['.'])  # TODO: This shouldn't be '.' for clarity.
+                    row_options.append(['X'])  # TODO: This shouldn't be '.' for clarity.
 
             options.append(row_options)
         return options
@@ -64,8 +64,8 @@ class FrameManager:
     def create_frame(self) -> None:
         while True:
             try:
-                rows = self.get_valid_input("Rows: ", is_frame_index=False)
-                cols = self.get_valid_input("Cols: ", is_frame_index=False)
+                rows = int(input("no of Rows? "))
+                cols = int(input("no of Columns? "))
                 if rows > 0 and cols > 0:
                     frame = Frame(rows, cols, self.frame_number_next())
                     self.frames.append(frame)
@@ -78,7 +78,7 @@ class FrameManager:
         for i, frame in enumerate(self.frames):
             print(f"{i + 1}. Frame {i + 1}")
 
-        from_frame_index = self.get_valid_input("From frame: ", is_frame_index=True)
+        from_frame_index = int(input("From frame: "))
 
         print(f"Positions in Frame {from_frame_index + 1}:")
         options = self.frames[from_frame_index].available_positions(self.frames)
@@ -96,37 +96,20 @@ class FrameManager:
         for i in to_frame_indices:
             print(f"{i + 1}. Frame {i + 1}")
 
-        to_frame_index: int = self.get_valid_input("To frame: ", is_frame_index=True, exclude=from_frame_index)
-
-        row: int = self.get_valid_input("Row for portal: ", is_frame_index=False, max_value=self.frames[from_frame_index].rows - 1)
-        col: int = self.get_valid_input("Col for portal: ", is_frame_index=False, max_value=self.frames[from_frame_index].cols - 1)
+        to_frame_index = int(input("To frame: "))
+        row = int(input("Row for button: "))
+        col = int(input("Col for button: "))
 
         if self.frames[from_frame_index].can_set_button(row, col):
             if self.frames[to_frame_index].can_set_button(row, col):
                 if self.frames[from_frame_index].set_button(row, col, to_frame_index + 1):
                     self.frames[to_frame_index].set_button(row, col, from_frame_index + 1)
+        else:
+            print("cannot set button here. ")
 
     def display_frames(self):
         print("Displaying all frames: ")
         for i, frame in enumerate(self.frames): frame.display()
-
-    # This is fucking disgusting.
-    # TODO: Remove this function, we just abort if you messed up the input.
-    def get_valid_input(self, prompt: str, is_frame_index: bool, max_value: int = None, exclude: int = None) -> int:
-        while True:
-            try:
-                value = int(input(prompt))
-                if is_frame_index:
-                    frame_index = value - 1
-                    if 0 <= frame_index < len(self.frames) and frame_index != exclude:
-                        return frame_index
-                    print("Invalid frame. Please try again.")
-                else:
-                    if (max_value is None) or (0 <= value <= max_value):
-                        return value
-                    print(f"Value must be between 0 and {max_value}.")
-            except ValueError:
-                print("Invalid input. Please enter an integer.")
 
 
 def main() -> None:
@@ -134,11 +117,11 @@ def main() -> None:
 
     while True:
         print('''
-        Menu: 
-        1. New Frame 
-        2. Set Portal 
-        3. Display Frames 
-        4. Exit
+Menu: 
+1. New Frame 
+2. Set Portal 
+3. Display Frames 
+4. Exit
         ''')
         choice = input("Choice: ")
 
@@ -156,3 +139,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+''' Notes:
+I used to call them portals; transition to calling them buttons.
+'''
