@@ -5,7 +5,6 @@ class Frame:
         self.cols = cols
         print(f"A ({rows}x{cols}) frame, ID: {self.frame_number}, created.")
 
-        # TODO: The grid Var doesn't need to be here if we have self.button, but removing it takes time and doesn't help with anything...
         self.grid: [int, int] = [['.' for _ in range(cols)] for _ in range(rows)]  # '.' are empty spaces.
         self.button: [(int, int), int] = {}  # [(y, x), grid];
 
@@ -91,54 +90,43 @@ class FrameManager:
             print(' '.join(row_options))
 
         print(f"To frame (excluding {from_frame}):")
-        for j in [i for i in range(len(self.frames)) if i != from_frame]: print(f"{j}. Frame {j}")
+        for i, frame in enumerate(self.frames):
+            if frame != from_frame: print(f"{i}. Frame {frame}")
 
         to_frame = int(input("To frame: "))
         row = int(input("Row for button: "))
         col = int(input("Col for button: "))
 
+        # Checks if the button can even be put onto the source frame.
         if row <= self.frames[from_frame].rows - 1 or col <= self.frames[from_frame].cols - 1:
-            found_x = False
+            # Check which of the two frames is bigger.
             if self.frames[from_frame].rows > self.frames[to_frame].rows or self.frames[from_frame].cols > self.frames[to_frame].cols:
-                for row_check in range(self.frames[to_frame].rows):
-                    for col_check in range(self.frames[to_frame].cols):
-                        if self.frames[from_frame].grid[row_check][col_check] != '.':
-                            print("cannot place button there, overlap not free")
-                            found_x = True
-                            break
-                    if found_x:
-                        break
-                if not found_x:
-                    self.frames[from_frame].set_button(row, col, to_frame)
-                    if row < self.frames[to_frame].rows or col < self.frames[to_frame].cols:
-                        self.frames[to_frame].set_button(row, col, from_frame)
-                    # TODO: This is where things get turned into X's update to change it when needed at some point
-                    # TODO: A button location should only be blocked when there is a button blocking it, currently it does it just in case.
+                self.frames[from_frame].set_button(row, col, to_frame)
+                if row < self.frames[to_frame].rows or col < self.frames[to_frame].cols:
+                    self.frames[to_frame].set_button(row, col, from_frame)
             else:
                 self.frames[from_frame].set_button(row, col, to_frame)
                 self.frames[to_frame].set_button(row, col, from_frame)
         else:
             print("Outside of limits etc... ")
-        self.check_stuff_idk()
 
-    def display_frames(self):
-        for i, frame in enumerate(self.frames):
-            frame.display()
-
-    def check_stuff_idk(self):
+        # This checks for the dependencies on all frames for each button.
         for i, frame in enumerate(self.frames):
             # List allows for: RuntimeError: dictionary changed size during iteration
             for coords in list(frame.button):
                 if frame.button[coords] != "X":
                     for inner_coords in list(self.frames[frame.button[coords]].button):
-                        print("def.2")
                         try:
                             if frame.grid[inner_coords[0]][inner_coords[1]] == '.':
                                 frame.set_button(*inner_coords, 'X')
                         except Exception as e:
-                            print("def. ", e)
+                            print("")
                             pass
                         pass
+
+    def display_frames(self):
+        for i, frame in enumerate(self.frames):
+            frame.display()
 
 
 def main() -> None:
@@ -148,7 +136,7 @@ def main() -> None:
         print('''
 Menu: 
 1. New Frame 
-2. Set Portal 
+2. Set Button 
 3. Display Frames 
 4. Exit
         ''')
@@ -171,8 +159,3 @@ Menu:
 if __name__ == "__main__":
     main()
 
-''' Notes:
-I used to call them portals; transition to calling them buttons.
-'\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
-Dependency graphs
-'''
