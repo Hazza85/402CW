@@ -16,7 +16,7 @@ class Frame:
             print(' '.join(row))
         print("")
 
-    def set_button(self, row, col, target_frame: int) -> bool:
+    def set_button(self, row, col, target_frame) -> bool:
         # You are passing the number representing the target frame and not the actual reference to it.
         if self.grid[row][col] == '.':
             self.grid[row][col] = str(target_frame)
@@ -86,7 +86,8 @@ class FrameManager:
             for col in range(self.frames[from_frame].cols):
                 if options[row][col] != ['.']:
                     row_options.append(f"[{', '.join(map(str, options[row][col]))}]")
-                else: row_options.append('.')
+                else:
+                    row_options.append('.')
             print(' '.join(row_options))
 
         print(f"To frame (excluding {from_frame}):")
@@ -96,16 +97,42 @@ class FrameManager:
         row = int(input("Row for button: "))
         col = int(input("Col for button: "))
 
-        if self.frames[from_frame].can_set_button(row, col):
-            if self.frames[to_frame].can_set_button(row, col):
-                if self.frames[from_frame].set_button(row, col, to_frame):
-                    self.frames[to_frame].set_button(row, col, from_frame)
+        if row <= self.frames[from_frame].rows - 1 or col <= self.frames[from_frame].cols - 1:
+            found_x = False
+            if self.frames[from_frame].rows > self.frames[to_frame].rows or self.frames[from_frame].cols > self.frames[
+                to_frame].cols:
+                for row_check in range(self.frames[to_frame].rows):
+                    for col_check in range(self.frames[to_frame].cols):
+                        if self.frames[from_frame].grid[row_check][col_check] != '.':
+                            print("cannot place button there, overlap not free")
+                            found_x = True
+                            break
+                    if found_x:
+                        break
+                if not found_x:
+                    self.frames[from_frame].set_button(row, col, to_frame)
+                    if row < self.frames[to_frame].rows or col < self.frames[to_frame].cols:
+                        self.frames[to_frame].set_button(row, col, from_frame)
+                    # TODO: This is where things get turned into X's update to change it when needed at some point
+                    # TODO: A button location should only be blocked when there is a button blocking it, currently it does it just in case.
+                    for row_check2 in range(self.frames[to_frame].rows):
+                        for col_check2 in range(self.frames[to_frame].cols):
+                            self.frames[from_frame].set_button(row_check2, col_check2, 'X')
+            else:
+                self.frames[from_frame].set_button(row, col, to_frame)
+                self.frames[to_frame].set_button(row, col, from_frame)
         else:
-            print("Cannot set button here. ")
+            print("Outside of limits etc... ")
+        self.check_stuff_idk(from_frame, to_frame)
 
     def display_frames(self):
         for i, frame in enumerate(self.frames):
             frame.display()
+
+    def check_stuff_idk(self):
+        for frame in self.frames:
+            for i in self.frames[from_frame].button:
+                print(i)
 
 
 def main() -> None:
@@ -141,4 +168,7 @@ if __name__ == "__main__":
 ''' Notes:
 I used to call them portals; transition to calling them buttons.
 '\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
+Dependency graphs
 '''
+
+
