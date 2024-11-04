@@ -11,11 +11,9 @@ class Frame:
 
     # Used to display the grid,
     def display(self):
-        print(f"Frame ID: {self.frame_number}... ")
+        print(f"Frame ID: {self.frame_number} ")
         for row in self.grid:
             print(' '.join(row))
-        # '\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
-        print('\n')
 
     def set_button(self, row, col, target_frame: int) -> bool:
         # You are passing the number representing the target frame and not the actual reference to it.
@@ -46,7 +44,7 @@ class Frame:
                     row_options.append(valid_targets if valid_targets else ['.'])
                 else:
                     # This is when there already a button on the FROM frames square, avoids excess compute.
-                    row_options.append(['X'])  # TODO: This shouldn't be '.' for clarity.
+                    row_options.append(['X'])
 
             options.append(row_options)
         return options
@@ -55,7 +53,8 @@ class Frame:
 class FrameManager:
     def __init__(self):
         self.frames: list[Frame] = []
-        self.frame_number = 0  # Logic from before the frames knew what number they were, so do NOT change this to -1.
+        # Having the frame number and the index not equal to each other makes the code hard to read.
+        self.frame_number = -1
 
     def frame_number_next(self):
         self.frame_number += 1
@@ -76,34 +75,34 @@ class FrameManager:
     def set_button(self) -> None:
         print("Available frames:")
         for i, frame in enumerate(self.frames):
-            print(f"{i + 1}. Frame {i + 1}")
+            print(f"{i}. Frame {i}")
 
-        from_frame_index = int(input("From frame: "))
+        from_frame = int(input("From frame: "))
 
-        print(f"Positions in Frame {from_frame_index + 1}:")
-        options = self.frames[from_frame_index].available_positions(self.frames)
-        for row in range(self.frames[from_frame_index].rows):
+        print(f"Positions in Frame {from_frame}:")
+        options = self.frames[from_frame].available_positions(self.frames)
+        for row in range(self.frames[from_frame].rows):
             output_row = []
-            for col in range(self.frames[from_frame_index].cols):
+            for col in range(self.frames[from_frame].cols):
                 if options[row][col] != ['.']:
                     output_row.append(f"[{', '.join(map(str, options[row][col]))}]")
                 else:
                     output_row.append('.')
             print(' '.join(output_row))
 
-        print(f"To frame (excluding {from_frame_index + 1}):")
-        to_frame_indices: list[int] = [i for i in range(len(self.frames)) if i != from_frame_index]
+        print(f"To frame (excluding {from_frame}):")
+        to_frame_indices: list[int] = [i for i in range(len(self.frames)) if i != from_frame]
         for i in to_frame_indices:
-            print(f"{i + 1}. Frame {i + 1}")
+            print(f"{i}. Frame {i}")
 
         to_frame_index = int(input("To frame: "))
         row = int(input("Row for button: "))
         col = int(input("Col for button: "))
 
-        if self.frames[from_frame_index].can_set_button(row, col):
+        if self.frames[from_frame].can_set_button(row, col):
             if self.frames[to_frame_index].can_set_button(row, col):
-                if self.frames[from_frame_index].set_button(row, col, to_frame_index + 1):
-                    self.frames[to_frame_index].set_button(row, col, from_frame_index + 1)
+                if self.frames[from_frame].set_button(row, col, to_frame_index):
+                    self.frames[to_frame_index].set_button(row, col, from_frame)
         else:
             print("cannot set button here. ")
 
@@ -123,6 +122,7 @@ Menu:
 3. Display Frames 
 4. Exit
         ''')
+
         choice = input("Choice: ")
 
         if choice == '1':
@@ -143,4 +143,5 @@ if __name__ == "__main__":
 
 ''' Notes:
 I used to call them portals; transition to calling them buttons.
+'\n' <- I have a 60% keyboard I don't have a '\' that I can use; do NOT delete this comment.
 '''
