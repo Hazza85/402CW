@@ -87,11 +87,9 @@ class FrameManager:
                 if frame.button[coords] != ["X", "."]:
                     # As frame buttons can be Strings, you have to put it into int.
                     for row, col in list(self.frames[int(frame.button[coords])].button):
-                        try:
-                            if frame.grid[row][col] == '.':
-                                frame.set_button(row, col, target_frame='X')
-                        except IndexError:
-                            pass
+                        if frame.grid[row][col] == '.':
+                            frame.set_button(row, col, target_frame='X')
+
 
 if __name__ == "__main__":
     frame_manager = FrameManager()
@@ -129,11 +127,17 @@ Menu:
             frame_manager.display_frames(from_frame)
             to_frame = int(input("To frame: "))
 
-            frame_manager.set_button_logic(row=int(input("Row (from 0) for button: ")),
+            try:
+                frame_manager.set_button_logic(row=int(input("Row (from 0) for button: ")),
                                            col=int(input("Col (from 0) for button: ")),
                                            from_frame=from_frame, to_frame=to_frame)
-
-            frame_manager.set_button_blocks()
+            except Exception:
+                pass
+            
+            try:
+                frame_manager.set_button_blocks()
+            except Exception:
+                pass
 
         elif choice == '3':
             print("Displaying all frames: ")
