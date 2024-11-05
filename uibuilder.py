@@ -6,7 +6,7 @@ class Frame:
         print(f"A ({rows}x{cols}) frame, ID: {self.frame_number}, created.")
 
         self.grid: [int, int] = [['.' for _ in range(cols)] for _ in range(rows)]  # '.' are empty spaces.
-        self.button: [(int, int), str] = {}  # [(y, x), grid];
+        self.link: [(int, int), str] = {}  # [(y, x), grid];
 
     def display(self):
         """
@@ -35,7 +35,7 @@ class Frame:
         if self.grid[row][col] == '.':
             self.grid[row][col] = str(target_frame)
             # Store target frame ID as a string for consistency, it's usually treated as a String.
-            self.button[(row, col)] = str(target_frame)
+            self.link[(row, col)] = str(target_frame)
 
             print(f"Button placed from: Frame {self.frame_number} to Frame {target_frame} at ({row}, {col}).")
             return True
@@ -63,48 +63,38 @@ class FrameManager:
                 print(f'{frame.display()}')
 
     def set_button_logic(self, row, col, from_frame, to_frame):
-        for link in list(self.frames[to_frame].button):
-            for y, x in list(link):
-                if (y == row and x == col and y is not None and x is not None):
+        for link in self.frames[to_frame].link:
+            for link_row, link_col in link:
+                if link_row == row and link_col == col:
                     return False
         self.frames[from_frame].set_button(row, col, target_frame=to_frame)
         self.frames[to_frame].set_button(row, col, target_frame=from_frame)
-                    
+
     def check_if_you_can(self, from_frame):
-        # for to_frame in len(self.frames):
-        #     # Gets array of all grids that does NOT include itself.
-        #     options = []
-        #     inner_options = []
-        #     for i in range(len(self.frames)):
-        #         if i != from_frame:
-        #             inner_options.append(i)
+        print(f"\nPlacement Options for Frame {from_frame}:\n")
 
-        #     for link in list(self.frames[to_frame].button)):
-        #         for y, x in list(link):
-        #             for rows in range(self.frames[to_frame].rows):
-        #                 inner_options = []
-        #                 for columns in range(self.frames[to_frame].cols):
-        #                     if (y == rows and x == columns and y is not None and x is not None):
-        #                         inner_options.remove(to_frame)
-        #         options.append(inner_options)
-        #     print("boop:" ,options)
-        pass
+        # List of all frames except `from_frame`
+        all_frames = [str(i) for i in range(len(self.frames)) if i != from_frame]
+        placement_grid = [[all_frames.copy() for _ in range(self.frames[from_frame].cols)]
+                          for _ in range(self.frames[from_frame].rows)]
 
-        # for each possible frame != from_frame
-        # remove from arrary for each square it cannot go,
-        # doesn't have to return -> bool, could also just print where.
+        for to_frame in range(len(self.frames)):
+            if to_frame == from_frame:
+                continue  # Skip `from_frame` itself
 
-    def set_button_blocks(self):
-        # This checks for the dependencies on all frames for each button.
-        # for frame in self.frames:
-        #     # List allows for: RuntimeError: dictionary changed size during iteration
-        #     for coords in list(frame.button):
-        #         if frame.button[coords] != ["X", "."]:
-        #             # As frame buttons can be Strings, you have to put it into int.
-        #             for row, col in list(self.frames[int(frame.button[coords])].button):
-        #                 if frame.grid[row][col] == '.':
-        #                     frame.set_button(row, col, target_frame='X')
-        return
+            for (link_row, link_col) in self.frames[to_frame].link.keys():
+                if link_row < self.frames[from_frame].rows and link_col < self.frames[from_frame].cols:
+                    if str(to_frame) in placement_grid[link_row][link_col]:
+                        placement_grid[link_row][link_col].remove(str(to_frame))
+
+            for y in range(min(self.frames[to_frame].rows, self.frames[from_frame].rows)):
+                for x in range(min(self.frames[to_frame].cols, self.frames[from_frame].cols)):
+                    if self.frames[to_frame].grid[y][x] != '.':
+                        if str(to_frame) in placement_grid[y][x]:
+                            placement_grid[y][x].remove(str(to_frame))
+
+        for row in placement_grid:
+            print(" | ".join([", ".join(cell) if cell else "No" for cell in row]))
 
 
 if __name__ == "__main__":
@@ -117,6 +107,7 @@ Menu:
 2. Set Button 
 3. Display Frames 
 4. Exit
+
             ''')
 
         choice = input("Choice: ")
@@ -146,8 +137,8 @@ Menu:
 
             try:
                 frame_manager.set_button_logic(row=int(input("Row (from 0) for button: ")),
-                                           col=int(input("Col (from 0) for button: ")),
-                                           from_frame=from_frame, to_frame=to_frame)
+                                               col=int(input("Col (from 0) for button: ")),
+                                               from_frame=from_frame, to_frame=to_frame)
             except Exception as e:
                 print(e)
                 pass
