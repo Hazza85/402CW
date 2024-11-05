@@ -63,32 +63,48 @@ class FrameManager:
                 print(f'{frame.display()}')
 
     def set_button_logic(self, row, col, from_frame, to_frame):
-        # Checks if the button can even be put onto the source frame.
-        if row <= self.frames[from_frame].rows - 1 or col <= self.frames[from_frame].cols - 1:
-            # Check which of the two frames is bigger. (True if from_frame is bigger)
-            if (self.frames[from_frame].rows > self.frames[to_frame].rows or
-                    self.frames[from_frame].cols > self.frames[to_frame].cols):
-                self.frames[from_frame].set_button(row, col, to_frame)
-                # If the to_frame can hold the button, then set it.
-                if row < self.frames[to_frame].rows or col < self.frames[to_frame].cols:
-                    self.frames[to_frame].set_button(row, col, from_frame)
-            # If the to_frame is not smaller, you can freely set buttons.
-            else:
-                self.frames[from_frame].set_button(row, col, to_frame)
-                self.frames[to_frame].set_button(row, col, from_frame)
-        else:
-            print(f"Button location outside of {from_frame}'s bounds. ")
+        for link in list(self.frames[to_frame].button):
+            for y, x in list(link):
+                if (y == row and x == col and y is not None and x is not None):
+                    return False
+        self.frames[from_frame].set_button(row, col, target_frame=to_frame)
+        self.frames[to_frame].set_button(row, col, target_frame=from_frame)
+                    
+    def check_if_you_can(self, from_frame):
+        # for to_frame in len(self.frames):
+        #     # Gets array of all grids that does NOT include itself.
+        #     options = []
+        #     inner_options = []
+        #     for i in range(len(self.frames)):
+        #         if i != from_frame:
+        #             inner_options.append(i)
+
+        #     for link in list(self.frames[to_frame].button)):
+        #         for y, x in list(link):
+        #             for rows in range(self.frames[to_frame].rows):
+        #                 inner_options = []
+        #                 for columns in range(self.frames[to_frame].cols):
+        #                     if (y == rows and x == columns and y is not None and x is not None):
+        #                         inner_options.remove(to_frame)
+        #         options.append(inner_options)
+        #     print("boop:" ,options)
+        pass
+
+        # for each possible frame != from_frame
+        # remove from arrary for each square it cannot go,
+        # doesn't have to return -> bool, could also just print where.
 
     def set_button_blocks(self):
         # This checks for the dependencies on all frames for each button.
-        for frame in self.frames:
-            # List allows for: RuntimeError: dictionary changed size during iteration
-            for coords in list(frame.button):
-                if frame.button[coords] != ["X", "."]:
-                    # As frame buttons can be Strings, you have to put it into int.
-                    for row, col in list(self.frames[int(frame.button[coords])].button):
-                        if frame.grid[row][col] == '.':
-                            frame.set_button(row, col, target_frame='X')
+        # for frame in self.frames:
+        #     # List allows for: RuntimeError: dictionary changed size during iteration
+        #     for coords in list(frame.button):
+        #         if frame.button[coords] != ["X", "."]:
+        #             # As frame buttons can be Strings, you have to put it into int.
+        #             for row, col in list(self.frames[int(frame.button[coords])].button):
+        #                 if frame.grid[row][col] == '.':
+        #                     frame.set_button(row, col, target_frame='X')
+        return
 
 
 if __name__ == "__main__":
@@ -124,16 +140,18 @@ Menu:
             from_frame = int(input("From frame: "))
 
             print(f"Frames: (excluding {from_frame}):")
-            frame_manager.display_frames(from_frame)
+            frame_manager.check_if_you_can(from_frame)
+            # frame_manager.display_frames(from_frame)
             to_frame = int(input("To frame: "))
 
             try:
                 frame_manager.set_button_logic(row=int(input("Row (from 0) for button: ")),
                                            col=int(input("Col (from 0) for button: ")),
                                            from_frame=from_frame, to_frame=to_frame)
-            except Exception:
+            except Exception as e:
+                print(e)
                 pass
-            
+
             try:
                 frame_manager.set_button_blocks()
             except Exception:
