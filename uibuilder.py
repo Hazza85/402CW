@@ -87,9 +87,11 @@ class FrameManager:
                 if frame.button[coords] != ["X", "."]:
                     # As frame buttons can be Strings, you have to put it into int.
                     for row, col in list(self.frames[int(frame.button[coords])].button):
-                        if frame.grid[row][col] == '.':
-                            frame.set_button(row, col, target_frame='X')
-
+                        try:
+                            if frame.grid[row][col] == '.':
+                                frame.set_button(row, col, target_frame='X')
+                        except IndexError:
+                            pass
 
 if __name__ == "__main__":
     frame_manager = FrameManager()
