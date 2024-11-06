@@ -8,14 +8,12 @@ class Frame:
         frame_number (int): Unique identifier for the frame.
         rows (int): Number of rows in the frame grid.
         cols (int): Number of columns in the frame grid.
-        grid (list[list[str]]): 2D list representing the grid, initialised with '.' for empty spaces.
+        grid (list[list[str]]): 2D list representing the grid, initialized with '.' for empty spaces.
         links (dict[tuple[int, int], str]): Dictionary to store links, with grid positions as keys and target frame symbols as values.
 
-    Key Symbols for links:
-        X <- Location blocked, you cannot place a button there.
-        Number // frame_number <- Indicates which other frame the link points to.
-        . <- Empty slot.
-
+    Key Symbols:
+        X <- Location blocked, you cannot place a link there.
+        Number aka frame_number <- Indicates which other frame the link points to.
     """
 
     def __init__(self, rows, cols, frame_number):
@@ -25,7 +23,6 @@ class Frame:
             rows (int): Number of rows in the frame grid.
             cols (int): Number of columns in the frame grid.
             frame_number (int): Unique identifier for this frame.
-
         """
         self.frame_number: int = frame_number
         self.rows = rows
@@ -38,8 +35,7 @@ class Frame:
 
     def display(self):
         """Used to visualize the grid.
-        TODO: Make this return a json too.
-
+        TODO: Return Json so it can be used else where...
         """
         print(f"Frame ID: {self.frame_number} ")
         for row in self.grid:
@@ -47,19 +43,18 @@ class Frame:
         print("")
 
     def set_link(self, row, col, target_frame) -> bool:
-        """Sets a button on the grid pointing to the target frame.
+        """Sets a link on the grid pointing to the target frame.
 
         Args:
-            row (int): The row index where the button is to be placed.
-            col (int): The column index where the button is to be placed.
-            target_frame (str): The ID of the frame this button points to or 'X' if blocked.
+            row (int): The row index where the link is to be placed.
+            col (int): The column index where the link is to be placed.
+            target_frame (str): The ID of the frame this link points to or 'X' if blocked.
 
         Returns:
-            bool: True if the button was successfully set, False if the position is already occupied.
+            bool: True if the link was successfully set, False if the position is already occupied.
 
         Notes:
             You are passing the number representing the target frame and not the actual reference to it.
-
         """
         # Check if the position is empty
         if self.grid[row][col] == '.':
@@ -67,7 +62,7 @@ class Frame:
             self.grid[row][col] = str(target_frame)
             self.links[(row, col)] = str(target_frame)
 
-            print(f"Button placed from: Frame {self.frame_number} to Frame {target_frame} at ({row}, {col}).")
+            print(f"Link placed from: Frame {self.frame_number} to Frame {target_frame} at ({row}, {col}).")
             return True
         print(f"Frame: {target_frame} at ({row}, {col}) occupied.")
         return False
@@ -79,7 +74,6 @@ class FrameManager:
     Attributes:
         frames (list[Frame]): List of all frames managed by this FrameManager.
         frame_number (int): Counter for assigning unique IDs to new frames.
-
     """
 
     def __init__(self):
@@ -93,7 +87,6 @@ class FrameManager:
 
         Args:
             block (int, optional): ID of the frame to exclude from display. Defaults to MAXINT, showing all frames.
-
         """
         # Loop through frames to display each unless it matches the block
         for frame in self.frames:
@@ -109,7 +102,6 @@ class FrameManager:
 
         Returns:
             Frame: The newly created frame.
-
         """
         # Create a new frame with unique frame_number
         frame = Frame(rows, cols, self.frame_number)
@@ -121,21 +113,20 @@ class FrameManager:
         """Sets bidirectional links between two frames at a specified grid position.
 
         Args:
-            row (int): Row index in the grid for the button.
-            col (int): Column index in the grid for the button.
+            row (int): Row index in the grid for the link.
+            col (int): Column index in the grid for the link.
             from_frame (int): ID of the source frame.
             to_frame (int): ID of the target frame.
 
         Notes:
             Ensures links are only set if the positions are free, and links are added in both directions.
-
         """
         # Check if a link already exists at the specified row and col
         for link in self.frames[to_frame].links:
             for link_row, link_col in link:
                 if link_row == row and link_col == col:
                     return
-        # Set buttons twice for bi-directionality
+        # Set links twice for bi-directionality
         self.frames[from_frame].set_link(row, col, target_frame=to_frame)
         self.frames[to_frame].set_link(row, col, target_frame=from_frame)
 
@@ -148,7 +139,7 @@ class FrameManager:
         Notes:
             Loops through all frames except the current one, checking squares for exclusivity and occupied spaces.
             This method outputs placement options in a grid format.
-
+            TODO: Return Json so it can be used else where...
         """
         print(f"\nPlacement Options for Frame {from_frame}:")
 
@@ -184,20 +175,39 @@ class FrameManagerInterface:
 
     Attributes:
         frame_manager (FrameManager): Instance of FrameManager for managing frames and links.
-
     """
 
     def __init__(self):
-        """Initializes the FrameManagerInterface with a new FrameManager instance.
-
-        """
+        """Initializes the FrameManagerInterface with a new FrameManager instance."""
         self.frame_manager = FrameManager()
 
+    def run(self):
+        """Runs the main menu loop for frame management."""
+        while True:
+            print('''
+            
+Menu: 
+1. New Frame 
+2. Set Link 
+3. Display Frames 
+4. Exit
+
+            ''')
+            choice = input("Choice: ")
+            if choice == '1':
+                self.add_new_frame()
+            elif choice == '2':
+                self.set_link()
+            elif choice == '3':
+                self.display_all_frames()
+            elif choice == '4':
+                self.exit_program()
+                break
+            else:
+                print("Invalid choice.")
+
     def add_new_frame(self):
-        """Prompts the user to enter dimensions and adds a new frame to the FrameManager.
-
-        """
-
+        """Prompts the user to enter dimensions and adds a new frame to the FrameManager."""
         # Prompting user for frame dimensions
         rows = int(input("Number of Rows? "))
         cols = int(input("Number of Columns? "))
@@ -209,29 +219,26 @@ class FrameManagerInterface:
         else:
             print("Invalid dimensions; rows and columns must be greater than 0.")
 
-    def set_button(self):
-        """Allows the user to set a bidirectional button link between two frames.
-
-        """
-
+    def set_link(self):
+        """Allows the user to set a bidirectional link between two frames."""
         # Display all frames first so user can decide on link positions
         self.display_all_frames()
 
         try:
             # Selecting frames and grid positions
             from_frame = int(input("From frame: "))
-            print(f"Frames (excluding {from_frame}):")
 
+            # Show the frames you can choose from
+            print(f"Frames (excluding {from_frame}):")
             self.frame_manager.check_placement_options(from_frame)
 
             to_frame = int(input("To frame: "))
-            row = int(input("Row (from 0) for button: "))
-            col = int(input("Col (from 0) for button: "))
-
+            row = int(input("Row (from 0) for link: "))
+            col = int(input("Col (from 0) for link: "))
             self.frame_manager.set_link_logic(row=row, col=col, from_frame=from_frame, to_frame=to_frame)
-            print("Button link set successfully.")
 
-        # This is such a silly way to prevent issues.
+            print("Link set successfully.")
+
         except ValueError:
             print("Invalid input. Please enter integers for frame numbers and grid positions.")
 
@@ -242,49 +249,17 @@ class FrameManagerInterface:
             print(f"Error: {e}")
 
     def display_all_frames(self):
-        """Displays all frames using the FrameManager's display function.
-
-        """
+        """Displays all frames using the FrameManager's display function."""
         print("Displaying all frames:")
         self.frame_manager.display_frames()
 
     @staticmethod
     def exit_program():
-        """Handles the exit procedure for the FrameManagerInterface.
-
-        """
+        """Handles the exit procedure for the FrameManagerInterface."""
         print("Exiting program. Goodbye!")
-
-    def command_line_interface(self):
-        """Runs the main menu loop for frame management.
-
-        """
-        while True:
-            print('''
-
-    Menu: 
-    1. New Frame 
-    2. Set Button 
-    3. Display Frames 
-    4. Exit
-
-                ''')
-            choice = input("Choice: ")
-            if choice == '1':
-                self.add_new_frame()
-            elif choice == '2':
-                self.set_button()
-            elif choice == '3':
-                self.display_all_frames()
-            elif choice == '4':
-                self.exit_program()
-                break
-            else:
-                print("Invalid choice.")
 
 
 # Only runs the interface if the script is executed directly
 if __name__ == "__main__":
-    # Initialize the interface and command_line_interface the main menu loop
-    interface = FrameManagerInterface()
-    interface.command_line_interface()
+    # Initialize the interface and run the main menu loop
+    FrameManagerInterface().run()
