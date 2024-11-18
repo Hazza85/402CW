@@ -1,5 +1,5 @@
 from xmlrpc.client import MAXINT
-
+import json
 
 class Frame:
     """Represents a grid-based frame with rows and columns, where links can be added to connect frames.
@@ -123,9 +123,8 @@ class FrameManager:
         """
         # Check if a link already exists at the specified row and col
         for link in self.frames[to_frame].links:
-            for link_row, link_col in link:
-                if link_row == row and link_col == col:
-                    return
+            if link[0] == row and link[1] == col:
+                return
         # Set links twice for bi-directionality
         self.frames[from_frame].set_link(row, col, target_frame=to_frame)
         self.frames[to_frame].set_link(row, col, target_frame=from_frame)
@@ -190,7 +189,8 @@ Menu:
 1. New Frame 
 2. Set Link 
 3. Display Frames 
-4. Exit
+4. To JSON
+5. Exit
 
             ''')
             choice = input("Choice: ")
@@ -201,6 +201,8 @@ Menu:
             elif choice == '3':
                 self.display_all_frames()
             elif choice == '4':
+                self.to_json()
+            elif choice == '5':
                 self.exit_program()
                 break
             else:
@@ -252,6 +254,27 @@ Menu:
         """Displays all frames using the FrameManager's display function."""
         print("Displaying all frames:")
         self.frame_manager.display_frames()
+
+    def to_json(self):
+        frames = self.frame_manager.frames
+
+        #Make a dictionary with the frame data
+        framesDict = []
+        for i in range(len(frames)):
+            fDict = {}
+            links = []
+            fDict.update({"id": frames[i].frame_number})
+            fDict.update({"rows": frames[i].rows})
+            fDict.update({"cols": frames[i].cols})
+            for l in frames[i].links:
+                links.append({"id": int(frames[i].links[l]), "row": l[0], "col": l[1]})
+            fDict.update({"links": links})
+            framesDict.append(fDict)
+
+        #Write to file, json.dump converts dictionary to a JSON string
+        file = open("frames.json", "w")
+        json.dump(framesDict, file, indent = 3)
+        print("Outputted JSON file to frames.json")
 
     @staticmethod
     def exit_program():
